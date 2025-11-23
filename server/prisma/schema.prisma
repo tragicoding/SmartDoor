@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum DeviceType {
+  DOOR_SENSOR
+  UMBRELLA_BIN
+  SPEAKER
+}
+
+model User {
+  // 2025/11/23 강륜 수정
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  pw_hash        String
+  pw             String?           // 원문 비밀번호 (과제용, 실제 서비스에서는 사용 금지)
+  lat            Float?
+  lon            Float?
+  name           String?           // 사용자 이름
+  road_address   String?           // 도로명 주소
+  detail_address String?           // 상세 주소
+  device_serial  String?           // 회원가입 시 입력한 기기 시리얼 (단순 텍스트 저장)
+  devices        Device[]
+  alarms         Alarm[]
+  daily_lists    DailyList[]
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+}
+
+model Device {
+  id         Int          @id @default(autoincrement())
+  user_id    Int?                         // 유저에 아직 귀속되지 않을 수 있으므로 optional
+  type       DeviceType
+  name       String
+  secret     String
+  serial     String       @unique         // 기기 스티커용 6자리 고유 ID
+  last_seen  DateTime?
+  user       User?        @relation(fields: [user_id], references: [id])
+  bin        UmbrellaBin?
+}
+
+model UmbrellaBin {
+  id         Int       @id @default(autoincrement())
+  device_id  Int       @unique
+  remain     Int
+  cap        Int
+  is_open    Boolean   @default(false)
+  device     Device    @relation(fields: [device_id], references: [id])
+  updated_at DateTime  @updatedAt
+}
+
+model Alarm {
+  id       Int    @id @default(autoincrement())
+  user_id  Int
+  text     String
+  user     User   @relation(fields: [user_id], references: [id])
+}
+
+model DailyList {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  date_key  String   // YYYY-MM-DD 형식의 날짜 키
+  items     Json     // 프론트에서 사용하는 리스트 항목 배열 전체를 JSON 으로 저장
+  user      User     @relation(fields: [user_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([user_id, date_key], name: "user_id_date_key")
+}

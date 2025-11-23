@@ -1,0 +1,70 @@
+# ===================================
+# .gitignore for Node.js Project
+# ===================================
+
+# 1. 의존성 (Dependencies)
+# -----------------------------------
+# npm 또는 yarn으로 설치되는 패키지 디렉토리. 용량이 매우 크고, package.json을 통해 복원 가능하므로 제외.
+node_modules/
+server/node_modules/
+web/node_modules/
+
+
+# 2. 환경 변수 (Environment Variables)
+# -----------------------------------
+# 데이터베이스 접속 정보, API 키 등 민감 정보를 포함하므로 절대 공유해서는 안 됨.
+# 각 팀원은 .env.example (있을 경우)을 복사하여 자신만의 .env 파일을 만들어야 함.
+.env
+.env.*
+!.env.example
+deploy/.env
+
+
+# 3. 로그 파일 (Log Files)
+# -----------------------------------
+# 서버 실행 중 생성되는 로그 파일들.
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+# 4. IDE 및 에디터 설정
+# -----------------------------------
+# Visual Studio Code, IntelliJ/WebStorm 등 개인의 개발 환경 설정을 공유하지 않기 위함.
+.vscode/
+.idea/
+.project
+.settings/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+
+# 5. 운영체제 생성 파일 (OS Generated Files)
+# -----------------------------------
+# macOS의 .DS_Store, Windows의 Thumbs.db 등
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+
+# 6. 빌드 결과물 (Build Output)
+# -----------------------------------
+# TypeScript, Babel 등을 사용할 경우 생성되는 컴파일된 파일들.
+dist/
+build/
+web/dist/
+web/build/
+
+
+# 7. 기타 (Miscellaneous)
+# -----------------------------------
+.npm
+.eslintcache

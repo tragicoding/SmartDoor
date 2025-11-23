@@ -1,0 +1,70 @@
+version: "3.9"
+
+# ---------------------------------------------------------
+# Smart Door - 로컬 개발용 docker-compose
+# MySQL, Adminer(DB GUI), Mosquitto(MQTT Broker)
+# ---------------------------------------------------------
+name: smartdoor
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_smartdoor
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      TZ: "Asia/Seoul"
+    env_file:
+      - ./.env
+    command: [
+      "--default-authentication-plugin=mysql_native_password",
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci"
+    ]
+    ports:
+      - "3307:3306"                        # 호스트:컨테이너
+    volumes:
+      - mysql_data:/var/lib/mysql          # 데이터 영속(볼륨 경로는 추후에 변경 가능성 있음)
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer_smartdoor
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"                        # http://localhost:8080 접속
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mqtt_broker
+    restart: unless-stopped
+    ports:
+      - "1883:1883"                        # MQTT (TCP)
+      # - "8883:8883"                      # TLS 사용 시 오픈
+    volumes:
+      # ★ mosquitto.conf를 프로젝트에 두고 마운트 (상대경로 유지)
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+      - ./mosquitto_passfile:/mosquitto/config/mosquitto_passfile
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 1883 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+
+volumes:
+  mysql_data:
+  mosquitto_data:
+  mosquitto_log:
