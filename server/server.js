@@ -25,6 +25,7 @@ import auth_routes from './src/routes/auth_routes.js';
 import user_routes from './src/routes/user_routes.js';
 import device_routes from './src/routes/device_routes.js';
 import bin_routes from './src/routes/bin_routes.js';
+import weather_routes from './src/routes/weather_routes.js';
 
 // 미들웨어 및 설정 임포트
 import { error_handler } from './src/middleware/error_handler.js';
@@ -57,6 +58,7 @@ app.use('/api/auth', auth_routes);
 app.use('/api/users', user_routes);
 app.use('/api/devices', device_routes);
 app.use('/api/bins', bin_routes);
+app.use('/api/weather', weather_routes);
 
 // --- 전역 오류 처리 ---
 app.use(error_handler);
