@@ -13,7 +13,10 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "현재 위치 기반 날씨와 우산 알림 서비스를 제공하기 위해 위치 정보 권한이 필요합니다."
+      }
     },
     "android": {
       "adaptiveIcon": {
