@@ -2,7 +2,7 @@
 // 2025/11/23 강륜 작성
 
 // const API_BASE_URL = 'http://localhost:4000'; // TODO: 실제 서버 주소/포트로 교체
-const API_BASE_URL = 'http://192.168.0.10:4000'; // http://인터넷 주소:4000
+const API_BASE_URL = 'http://165.194.203.66:4000'; // http://인터넷 주소:4000
 
 // 인터넷 주소 확인 방법
 // 1. window+R -> cmd 실행
