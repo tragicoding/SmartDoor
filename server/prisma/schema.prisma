@@ -14,17 +14,6 @@ enum DeviceType {
 }
 
 model User {
-<<<<<<< HEAD
-  id         Int       @id @default(autoincrement())
-  email      String    @unique
-  pw_hash    String
-  lat        Float?
-  lon        Float?
-  devices    Device[]
-  alarms     Alarm[]
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-=======
   // 2025/11/23 강륜 수정
   id             Int       @id @default(autoincrement())
   email          String    @unique
@@ -41,7 +30,6 @@ model User {
   daily_lists    DailyList[]
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
->>>>>>> e184111fb1132bdd72dd9d15b3fb8f0326a18bd2
 }
 
 model Device {
@@ -72,8 +60,6 @@ model Alarm {
   text     String
   user     User   @relation(fields: [user_id], references: [id])
 }
-<<<<<<< HEAD
-=======
 
 model DailyList {
   id        Int      @id @default(autoincrement())
@@ -86,4 +72,3 @@ model DailyList {
 
   @@unique([user_id, date_key], name: "user_id_date_key")
 }
->>>>>>> e184111fb1132bdd72dd9d15b3fb8f0326a18bd2
