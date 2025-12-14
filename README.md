@@ -131,49 +131,104 @@ Physical-Computing-Project/
 │  │  │  └─ error_handler.js              # 글로벌 에러 핸들러
 │  │  │
 │  │  ├─ routes/
-│  │  │  ├─ auth_routes.js                # /api/auth
-│  │  │  ├─ user_routes.js                # /api/users
-│  │  │  ├─ device_routes.js              # /api/devices
-│  │  │  ├─ bin_routes.js                 # /api/bins
-│  │  │  └─ weather_routes.js             # /api/weather (주간 날씨 등) <!-- 2025/11/23 강륜 추가 -->
-│  │  │
+│  │  │  ├─ auth_routes.js                      # /api/auth/*
+│  │  │  ├─ user_routes.js                      # /api/users/*
+
+Chung-Ang University undergraduate students majoring in Art and Technology
+Final Project for Physical Computing
+- Hwang Ha-rin(황하린), Kim Jin-seo(김진서), Kim Gang-ryun(김강륜)
+
+김강륜 
+-Front-end Developer / UI Architect
+김진서
+-Back-end Developer / Software Architect
+황하린
+-Hardware Engineer / Model Architect
+
+*** 백앤드 입장에서의 README.md 이므로, git push / commit 할시에 commit message에 작업수정 history 명시 바랍니다.
+      프런트앤드, 아두이노 에서 다른 팀원들 로컬에서 필요한 라이브러리 패키지 필요시 팀원들과 공유 부탁해여.
+      각 영역에 대한 디렉토리 구조는 임의로 정해놓은 것이므로, 자유롭게 해당 디렉토리 안에서 생성하시면 됩니다.
+
+0. 전체 API 포인트는 docs/API.md 확인 바랍니다.
+0. 개발 환경 세팅 및 구동 방식은 docs/SETUP.md 확인 바랍니다.
+0. (터미널) 각자의 로컬에서 실행할때, 윈도우 운영체제의 경우, powershell은 보안 정책으로 인해 npm 명령어가 안먹힐 수 있습니다.
+   따라서, cmd창 사용 권장 합니다.(mac은 저도 모르겠어요 ㅎ)
+0. 로컬에서 실행할 경우, npm install만 입력하시면 구동 가능합니다.
+0. Front end, Backend, Firmware 각 파트별로 README.md에 변수 및 엔드포인트 명시 했습니다. 확인바랍니다.
+0. Front end : /web
+   Backend : /server
+   Firmware(Arduino) : /firmwre
+0. node.module과 .env는 git ignore에 포함하엿음. 추후에 env환경변수 내용은 개인적으로 조율합시다. 
+   node.module은 너무 무거워서 ignore함. npm install 명령어 입력하면, package.json 목록에 따라 알아서 작동됨
+
+
+
+
+0. 팀원들 workflow
+   1) git clone
+      git clone https://github.com/tragicoding/Physical-Computing-Project.git
+   2) npm 모듈 설치
+      cd server
+      npm install
+   3) 서버 실행
+      npm run dev
+
+0. docker (mysql, mqtt)
+-docker + port 방식으로 구현 했는데, 보안/안정성에 위험이 있어서 이는 추후에 같이 고민을 해봐야 할것같습니다.
+
+
+
+1. 아키텍쳐 구조
+
+Physical-Computing-Project/
+├─ server/                                      # 백엔드 루트(Express 앱)
+│  ├─ prisma/
+│  │  └─ schema.prisma                          # DB 스키마(User/Device/UmbrellaBin/Alarm 등)
+│  ├─ src/
+│  │  ├─ config/
+│  │  │  ├─ prisma.js                           # PrismaClient 생성/공유
+│  │  │  └─ mqtt.js                             # MQTT 클라이언트(브로커 연결·구독/발행)
+│  │  ├─ middleware/
+│  │  │  ├─ auth.js                             # JWT 인증(사용자), 디바이스 공유키 인증
+│  │  │  ├─ validate.js                         # Joi 검증 미들웨어
+│  │  │  └─ error_handler.js                    # 전역 에러 핸들러(JSON 응답 표준화)
+│  │  ├─ controllers/
+│  │  │  ├─ auth_ctrl.js                        # 회원가입/로그인(JWT 발급)
+│  │  │  ├─ user_ctrl.js                        # 사용자 정보/좌표/알람 CRUD
+│  │  │  ├─ device_ctrl.js                      # 디바이스 등록/하트비트
+│  │  │  ├─ bin_ctrl.js                         # 우산함 상태 upsert/조회
+│  │  │  └─ weather_ctrl.js                     # 도어 감지 → 비 예보/우산함 → TTS/문개폐 명령
+│  │  ├─ services/
+│  │  │  ├─ weather_svc.js                      # 기상청 API 연동·강수 시작 시각 계산
+│  │  │  └─ tts_svc.js                          # 스피커 명령 전송(MQTT publish)
+│  │  ├─ routes/
+│  │  │  ├─ auth_routes.js                      # /api/auth/*
+│  │  │  ├─ user_routes.js                      # /api/users/* (주소/알람)
+│  │  │  ├─ device_routes.js                    # /api/devices/*
+│  │  │  ├─ bin_routes.js                       # /api/bins/*
+│  │  │  └─ weather_routes.js                   # /api/weather/*
 │  │  └─ utils/
-│  │     └─ logger.js                     # winston logger
-│  │
-│  ├─ .env                                # 서버 모든 환경변수
-│  ├─ package.json
-│  └─ server.js                           # ⭐ 서버 엔트리포인트
+│  │     └─ logger.js                           # Winston logger
+│  ├─ .env                                      # PORT, DB_URL, JWT_SECRET, etc.
+│  ├─ package.json                              # Dependencies and scripts
+│  └─ server.js                                 # App entry point
 │
+├─ web/                                         # Frontend (React/Vite)
+│  └─ src/
+│     └─ app.tsx                                # Example of backend REST calls
 │
-├─ firmware/                              # ⭐ 각 ESP32 소스코드
-│  ├─ door_sensor/
-│  │  └─ door_sensor.ino                  # door/{device_id}/sensed publish
-│  │
-│  ├─ umbrella_bin/
-│  │  └─ umbrella_bin.ino                 # bin/{device_id}/status publish
-│  │
-│  └─ speaker_tts/
-│     └─ speaker_tts.ino                  # speaker/{device_id}/cmd subscribe
-│
-│
-├─ web/                                   # ⭐ Expo React Native Frontend (모바일 앱)
-│  ├─ client/                             # Expo 프로젝트 루트
-│  │  ├─ App.js / app.json / index.js
-│  │  └─ app/                             # screens, components, services(api/location), store 등
-│  └─ README.md
-│
-│
-├─ deploy/                                # ⭐ Docker Infra
-│  ├─ docker-compose.yml                  # mysql + mosquitto + adminer
-│  ├─ mosquitto.conf                      # MQTT 설정파일
-│  ├─ mosquitto_passfile                  # mosquitto username/password
-│  └─ .env                                # docker 전용 환경변수(옵션)
-│
+├─ firmware/                                    # ESP32 (Arduino)
+│  ├─ door_sensor/door_sensor.ino               # MQTT publish
+│  ├─ umbrella_bin/umbrella_bin.ino             # MQTT publish
+│  └─ speaker_tts/speaker_tts.ino               # MQTT subscribe
+│  
+├─ deploy/
+│  └─ docker-compose.yml                        # MySQL, Mosquitto, Adminer containers
 │
 └─ docs/
-   ├─ API.md                               # REST API 명세
-   └─ SETUP.md                             # 개발 환경 구축 가이드
-
+   ├─ API.md                                    # REST API specifications
+   └─ SETUP.md                                  # Local setup guide
+```
 
 ## **2. Architecture Overview**
 
@@ -225,29 +280,24 @@ This is a hybrid, event-driven system combining a traditional web architecture (
 
 ## **5. API Endpoints (Frontend-Backend)**
 
-| Method/Path                  | Request Body                                               | Response                  | Description                                           |
-| :--------------------------- | :--------------------------------------------------------- | :------------------------ | :---------------------------------------------------- |
-| `POST /api/auth/signup`      | `{ email, pw, name?, road_address?, detail_address?, device_serial? }` | `{ user_id }` | 회원가입 (기본 정보 + 선택 주소/기기 시리얼)               | <!-- 2025/11/23 강륜 추가 -->
-| `POST /api/auth/login`       | `{ email, pw }`                                            | `{ token }`               | 로그인(JWT)                                            |
-| `GET /api/users/me`          | (JWT)                                                      | User Profile              | 내 정보 조회                                            |
-| `PUT /api/users/address`     | `{ lat, lon, name?, road_address?, detail_address?, pw?, device_serial? }` | `{ ok, lat, lon, name, pw, road_address, detail_address, device_serial }` | 사용자 집 주소/프로필/비밀번호/기기 시리얼 설정/수정 | <!-- 2025/11/23 강륜 추가 -->
-| `POST /api/users/alarms`     | `{ alarm_text }`                                           | `{ alarm_id }`            | 사용자 알람 추가                                        |
-| `GET /api/users/alarms`      | (JWT)                                                      | `{ alarms:[...] }`        | 알람 목록 조회                                          |
-| `POST /api/devices/register` | `{ serial, type, name }`                                   | `{ device_id }`           | 기기 등록(사용자 ↔ 기기 연결)                             |
-| `GET /api/bins/status`       | `?device_id=` (but 내부적으로 serial 기반)                   | `{ bin }`                 | 우산함 상태 조회                                         |
-| `GET /api/weather/weekly`    | Query: `lat`, `lon`, `test?`                               | `{ days: [{ date, sky, pty, tmp, tmx, tmn, pop }] }` | 주간 날씨 조회(프론트 홈/모달) | <!-- 2025/11/23 강륜 추가 -->
-| `GET /api/users/daily-lists`      | Query: `date_key` (`YYYY-MM-DD`)                      | `{ date_key, items:[{id,text,selected},...] }` | 특정 날짜의 To-get 리스트 조회       | <!-- 2025/11/23 강륜 추가 -->
-| `GET /api/users/daily-lists/all`  | (JWT)                                                 | `{ lists:[{date_key,items:[{id,text,selected},...]}, ...] }` | **현재 로그인 사용자의 모든 날짜별 To-get 리스트 일괄 조회** | <!-- 2025/11/23 강륜 추가 -->
-| `PUT /api/users/daily-lists`      | `{ date_key, items:[{id,text,selected},...] }`        | `{ ok, date_key, items:[...] }` | 날짜별 To-get 리스트 저장(업서트)                   | <!-- 2025/11/23 강륜 추가 -->
-
+| Method/Path              | Request Body   | Response         | Description        |
+| :----------------------- | :------------- | :--------------- | :----------------- |
+| `POST /api/auth/signup`  | `{email, pw}`  | `{user_id}`      | User Signup        |
+| `POST /api/auth/login`   | `{email, pw}`  | `{token}`        | User Login (JWT)   |
+| `GET /api/users/me`      | (JWT)          | User Profile     | Get My Info        |
+| `PUT /api/users/address` | `{lat, lon}`   | `{ok, lat, lon}` | Save Coordinates   |
+| `POST /api/users/alarms` | `{alarm_text}` | `{alarm_id}`     | Add Alarm          |
+| `GET /api/users/alarms`  | -              | `{alarms:[...]}` | List Alarms        |
+| `GET /api/bins/status`   | `?device_id=`  | `{bin}`          | Get Bin Status     |
 
 ## **6. MQTT Topics (Arduino-Backend)**
 
-| Topic Format           | Payload(JSON)                    | Description         |
-| ---------------------- | -------------------------------- | ------------------- |
-| `door/{serial}/sensed` | `{ ts: <timestamp> }` (optional) | 문 센서 이벤트(근접/여닫힘)    |
-| `bin/{serial}/status`  | `{ remain, cap, is_open }`       | 우산함 잔여 우산 개수 / 문 열림 |
-
+| Direction  | Topic                     | Payload (JSON)                        | Description                |
+| :--------- | :------------------------ | :------------------------------------ | :------------------------- |
+| ESP → Node | `door/{sensor_id}/sensed` | `{ user_id, sensor_id, ts }`          | Proximity/door sensor event|
+| ESP → Node | `bin/{device_id}/status`  | `{ device_id, remain, cap, is_open }` | Umbrella bin status        |
+| Node → ESP | `speaker/{device_id}/cmd` | `{ type: 'tts', text: voice_msg }`    | Voice notification command |
+| Node → ESP | `box/{device_id}/cmd`     | `{ act: 'open', close_in: 10000 }`    | Open/close door command    |
 
 ## **7. File Dependencies (Summary)**
 
@@ -263,19 +313,17 @@ server.js  - (Bootstrap all modules)
 All naming follows **snake_case** (e.g., `user_id`, `rain_time`).
 
 #### **A) Common Keys**
-| Variable       | Type         | From → To                     | Description                                            |
-| :------------- | :----------- | :---------------------------- | :----------------------------------------------------- |
-| `user_id`      | int          | Frontend/ESP32 → Backend      | User identifier                                        |
-| `device_id`    | int          | Frontend/ESP32 ↔ Backend      | Device identifier (bin, speaker, etc.)                 |
-| `device_serial`| string       | Frontend/Backend ↔ DB         | 사용자 입력 기기 시리얼(스티커 ID, `User.device_serial`)   | <!-- 2025/11/23 강륜 추가 -->
-| `sensor_id`    | int          | ESP32(door) → Backend         | Door/proximity sensor identifier                       |
-| `lat`, `lon`   | number       | Frontend → Backend            | User address coordinates for weather                   |
-| `remain`, `cap`| int          | ESP32(bin) → Backend          | Bin's remaining/capacity of umbrellas                  |
-| `is_open`      | boolean      | ESP32(bin) → Backend          | Bin's door status                                      |
-| `alarm_text`   | string       | Frontend → Backend            | Personalized alarm text (e.g., "Car keys")             |
-| `name`         | string       | Frontend → Backend            | Device display name                                    |
-| `type`         | string(enum) | Frontend → Backend/Node → ESP | `DOOR_SENSOR`, `UMBRELLA_BIN`, `SPEAKER`               |
-| `date_key`     | string(YYYY-MM-DD) | Frontend → Backend      | 일자별 To-get 리스트 식별용 날짜 키 (`DailyList.date_key`) | <!-- 2025/11/23 강륜 추가 -->
+| Variable       | Type         | From → To                     | Description                               |
+| :------------- | :----------- | :---------------------------- | :---------------------------------------- |
+| `user_id`      | int          | Frontend/ESP32 → Backend      | User identifier                           |
+| `device_id`    | int          | Frontend/ESP32 ↔ Backend      | Device identifier (bin, speaker, etc.)    |
+| `sensor_id`    | int          | ESP32(door) → Backend         | Door/proximity sensor identifier          |
+| `lat`, `lon`   | number       | Frontend → Backend            | User address coordinates for weather      |
+| `remain`, `cap`| int          | ESP32(bin) → Backend          | Bin's remaining/capacity of umbrellas     |
+| `is_open`      | boolean      | ESP32(bin) → Backend          | Bin's door status                         |
+| `alarm_text`   | string       | Frontend → Backend            | Personalized alarm text (e.g., "Car keys")|
+| `name`         | string       | Frontend → Backend            | Device display name                       |
+| `type`         | string(enum) | Frontend → Backend/Node → ESP | `DOOR_SENSOR`, `UMBRELLA_BIN`, `SPEAKER`  |
 
 #### **B) Auth & Security**
 | Variable        | Type         | From → To              | Description                               |
@@ -287,18 +335,15 @@ All naming follows **snake_case** (e.g., `user_id`, `rain_time`).
 
 #### **C) REST Request/Response Variables**
 **Request Body/Query (Frontend → Backend)**
-| Endpoint                     | Fields                                                                             |
-| :--------------------------- | :--------------------------------------------------------------------------------- |
-| `POST /api/auth/signup`      | `email`, `pw`, `name?`, `road_address?`, `detail_address?`, `device_serial?`       | <!-- 2025/11/23 강륜 추가 -->
-| `POST /api/auth/login`       | `email`, `pw`                                                                      |
-| `PUT /api/users/address`     | `lat`, `lon`, `name?`, `road_address?`, `detail_address?`, `pw?`, `device_serial?` | <!-- 2025/11/23 강륜 추가 -->
-| `POST /api/users/alarms`     | `alarm_text`                                                                       |
-| `POST /api/devices`          | `user_id`, `type`, `name`, `secret`                                                |
-| `POST /api/bins/update`      | `device_id`, `remain`, `cap`, `is_open`, `secret`                                  |
-| `GET /api/bins/status`       | `device_id` (query)                                                                |
-| `GET /api/users/daily-lists` | `date_key` (query, `YYYY-MM-DD`)                                                   | <!-- 2025/11/23 강륜 추가 -->
-| `PUT /api/users/daily-lists` | `date_key`, `items:[{id,text,selected}]`                                           | <!-- 2025/11/23 강륜 추가 -->
-| `GET /api/weather/weekly`    | `lat`, `lon`, `test?` (query)                                                      | <!-- 2025/11/23 강륜 추가 -->
+| Endpoint                   | Fields                                            |
+| :------------------------- | :------------------------------------------------ |
+| `POST /api/auth/signup`    | `email`, `pw`                                     |
+| `POST /api/auth/login`     | `email`, `pw`                                     |
+| `PUT /api/users/address`   | `lat`, `lon`                                      |
+| `POST /api/users/alarms`   | `alarm_text`                                      |
+| `POST /api/devices`        | `user_id`, `type`, `name`, `secret`               |
+| `POST /api/bins/update`    | `device_id`, `remain`, `cap`, `is_open`, `secret` |
+| `GET /api/bins/status`     | `device_id` (query)                               |
 
 **Response (Backend → Frontend)**
 | Context       | Example Fields                                        |
@@ -309,8 +354,6 @@ All naming follows **snake_case** (e.g., `user_id`, `rain_time`).
 | Bin Status    | `bin: { device_id, remain, cap, is_open, updatedAt }` |
 | Device Create | `device_id`                                           |
 | Common        | `message`, `ok`                                       |
-| Daily List    | `date_key`, `items:[{id,text,selected},...]`          | <!-- 2025/11/23 강륜 추가 -->
-| Weekly Weather| `days:[{date, sky, pty, tmp, tmx, tmn, pop}]`         | <!-- 2025/11/23 강륜 추가 -->
 
 #### **D) MQTT Payload/Topic Variables**
 **ESP32 → Backend (Publish)**
@@ -369,158 +412,263 @@ cd server && npm i && npx prisma migrate dev && npm run dev
 
 # 5. Backend subscribes, processes, and publishes commands to the speaker/bin
 ```
+│  │     └─ logger.js                           # winston 로거
+│  ├─ .env                                      # PORT, DB URL, JWT_SECRET, DEVICE_SECRET, MQTT_HOST 등
+│  ├─ package.json                              # 의존성/스크립트
+│  └─ server.js                                 # 앱 진입점(Express 부트스트랩)
+│
+│
+├─ firmware/                              # ⭐ 각 ESP32 소스코드
+│  ├─ door_sensor/
+│  │  └─ door_sensor.ino                  # door/{device_id}/sensed publish
+│  │
+│  ├─ umbrella_bin/
+│  │  └─ umbrella_bin.ino                 # bin/{device_id}/status publish
+│  │
+│  └─ speaker_tts/
+│     └─ speaker_tts.ino                  # speaker/{device_id}/cmd subscribe
+│
+│
+├─ web/                                   # ⭐ Expo React Native Frontend (모바일 앱)
+│  ├─ client/                             # Expo 프로젝트 루트
+│  │  ├─ App.js / app.json / index.js
+│  │  └─ app/                             # screens, components, services(api/location), store 등
+│  └─ README.md
+│
+│
+├─ deploy/                                # ⭐ Docker Infra
+│  ├─ docker-compose.yml                  # mysql + mosquitto + adminer
+│  ├─ mosquitto.conf                      # MQTT 설정파일
+│  ├─ mosquitto_passfile                  # mosquitto username/password
+│  └─ .env                                # docker 전용 환경변수(옵션)
+│
+│
+└─ docs/
+   ├─ API.md                               # REST API 명세
+   └─ SETUP.md                             # 개발 환경 구축 가이드
 
----
 
-## **11. 2025/11/23 이후 스키마 & API 확장 요약**
+2. Architecure에 대한 설명
 
-- **User 스키마 확장 (`prisma/schema.prisma`)**
-  - `name: String?` – 사용자 이름
-  - `road_address: String?` – 도로명 주소
-  - `detail_address: String?` – 상세 주소
-  - `pw: String?` – 과제용 원문 비밀번호 저장 필드 (실서비스에서는 절대 사용 금지)
-  - `device_serial: String?` – 회원가입/마이페이지에서 입력하는 기기 시리얼 문자열
-  - `daily_lists: DailyList[]` – 날짜별 To-get 리스트와의 1:N 관계
+프런트(React)–백엔드(Node.js/Express)–DB(MySQL)의 전통적 웹 아키텍처 위에,
+IoT 디바이스(ESP32/아두이노)와 MQTT 브로커를 결합한 하이브리드 이벤트 구동형 시스템이다.
 
-- **DailyList 모델 추가 (`prisma/schema.prisma`)**
-  - `DailyList`는 **사용자별 · 날짜별 To-get 리스트 전체를 JSON으로 저장**하는 테이블
-  - 필드
-    - `user_id: Int` – `User` FK
-    - `date_key: String` – `YYYY-MM-DD` 형식 날짜 키
-    - `items: Json` – 프론트에서 사용하는 리스트 항목 배열 전체를 그대로 직렬화해 저장
-    - `created_at`, `updated_at` – 생성/수정 시점 자동 기록
-  - 복합 Unique 인덱스 `@@unique([user_id, date_key], name: "user_id_date_key")` 로 **한 사용자당 하루에 한 건만 존재**하도록 보장
+프런트 ↔ 백엔드: REST(HTTP/JSON)
 
----
+디바이스 ↔ 백엔드: MQTT(pub/sub)
 
-## **12. 신규/확장 REST API 정리 (프론트 연동 관점)**
+백엔드 ↔ DB: Prisma ORM(MySQL)
 
-### 12-1. 회원가입 확장 (`POST /api/auth/signup`)
 
-- **요청 Body (최신)**
-  - `{ email, pw, name, road_address, detail_address, device_serial }`
-  - `name`, `road_address`, `detail_address`, `device_serial` 은 선택 입력이지만, 프론트(회원가입 화면)에서는 필수로 받고 있음
-- **처리 로직 (`src/controllers/auth_ctrl.js`)**
-  - `pw` 를 `bcrypt` 로 해싱하여 `pw_hash` 저장
-  - 과제 편의를 위해 `pw` 원문도 함께 저장 (나중에 마이페이지에서 비밀번호 표시/수정 가능)
-  - 주소/이름/기기 시리얼까지 함께 `User` 레코드에 반영
-- **응답**
-  - `{ user_id }` (기존과 동일)
 
-### 12-2. 마이페이지/로그인용 프로필 조회 (`GET /api/users/me`)
+3. 데이터 흐름
 
-- **컨트롤러 (`src/controllers/user_ctrl.js#get_my_profile`)**
-  - `id`, `email`, `lat`, `lon` 뿐만 아니라 **User 모델의 전체 컬럼을 그대로 반환**
-    - `name`, `road_address`, `detail_address`, `device_serial`, `pw` 등 포함 (과제용)
-  - 프론트 `MyPageScreen`에서 이 값을 받아 **내 정보 화면 초기값**으로 사용
+[React App]  ←──REST──→  [Node.js / Express]  ←──ORM──→  [MySQL]
+                                  │
+                                  │(MQTT Client)
+                                  ↓
+                           [MQTT Broker (Mosquitto)]
+                             ↙           │            ↘
+                [ESP32 door_sensor]  [ESP32 bin]  [ESP32 speaker]
+                      (publish)        (publish)       (subscribe)
 
-### 12-3. 사용자 주소/프로필/비밀번호/기기 시리얼 업데이트 (`PUT /api/users/address`)
 
-- **요청 Body (최신)**
-  - `lat: number` – 필수, 소수점 8자리까지 허용
-  - `lon: number` – 필수
-  - `name?: string` – 선택, 1~50자
-  - `road_address?: string` – 선택, 도로명 주소
-  - `detail_address?: string` – 선택, 상세 주소
-  - `pw?: string` – 선택, 6자 이상일 때만 비밀번호 변경 처리
-  - `device_serial?: string` – 선택, 1~64자 / 빈 문자열 허용 (마이페이지에서 초기화 용도)
-- **Joi 검증 (`src/routes/user_routes.js`)**
-  - `lat`, `lon` 필수 + 나머지는 optional 로 선언
-  - `device_serial` 은 `.allow('')` 로 빈 문자열 허용
-- **컨트롤러 처리 (`set_user_address`)**
-  - 요청 Body를 기반으로 `data` 객체 생성: `{ lat, lon, name, road_address, detail_address }`
-  - `pw` 가 함께 들어오면
-    - `data.pw = pw` (원문 저장, 과제용)
-    - `data.pw_hash = bcrypt.hash(pw, 10)` 로 해시도 갱신
-  - `device_serial` 이 truthy 면 `data.device_serial = device_serial` 로 함께 업데이트
-  - `prisma.user.update` 실행 후, 응답에는
-    - `{ ok: true, lat, lon, name, pw, road_address, detail_address, device_serial }` 만 select 하여 반환
-- **프론트 사용처**
-  - 로그인 직후: `LoginScreen` 이 기기 위치를 얻은 뒤 `lat/lon` 만 채워 호출 (이름/주소/비밀번호/시리얼은 건드리지 않음)
-  - 마이페이지: 사용자가 편집한 이름/주소/비밀번호/기기 시리얼 + 최신 좌표를 함께 저장하는 용도로 호출
+프런트 ↔ 백엔드: REST (HTTP/JSON)
 
-### 12-4. 날짜별 To-get 리스트 API (`GET/PUT /api/users/daily-lists`)
+백엔드 ↔ 아두이노(ESP32): MQTT (Pub/Sub, 실시간 푸시)    
 
-- **목적**
-  - 모바일 앱(Home/Calendar 화면)의 **날짜별 외출 리스트(To-get 리스트)** 를 서버 DB에 저장/조회하기 위한 전용 API
 
-- **라우트 정의 (`src/routes/user_routes.js`)**
-  - 공통: `router.use(user_auth)` 로 JWT 인증된 사용자만 접근 가능
 
-  - `GET /api/users/daily-lists`
-    - Query: `date_key` (필수, 정규식 `^\d{4}-\d{2}-\d{2}$`)
-    - Handler: `get_daily_list`
 
-  - `PUT /api/users/daily-lists`
-    - Body:
-      - `date_key: string` – `YYYY-MM-DD` 형식
-      - `items: Array<{ id: string; text: string; selected: boolean }>`
-    - Handler: `upsert_daily_list`
 
-- **컨트롤러 구현 (`src/controllers/daily_list_ctrl.js`)**
+React: 로그인/대시보드/알람 관리(UI)
 
-  - `get_daily_list`
-    - `prisma.dailyList.findUnique({ where: { user_id_date_key: { user_id: req.user_id, date_key } } })`
-    - 레코드가 없으면: `{ date_key, items: [] }` 로 응답 (404 대신 빈 리스트)
-    - 레코드가 있으면: `{ date_key: daily_list.date_key, items: daily_list.items ?? [] }` 반환
+Express: 인증, 비즈니스 로직, 기상 정보 통합, 디바이스 명령 발행
 
-  - `upsert_daily_list`
-    - `prisma.dailyList.upsert` 로 (user_id, date_key) 기준 업서트
-    - `update: { items }`, `create: { user_id: req.user_id, date_key, items }`
-    - 응답: `{ ok: true, date_key, items }`
+MySQL: 사용자/디바이스/우산함/알람 영구 저장
 
-- **프론트 연동 요약**
-  - 홈 화면 `HomeScreen` 에서 날짜 선택 시마다 `GET /api/users/daily-lists?date_key=...` 로 리스트 조회
-  - 리스트 편집 모달 `ListInputModal` 에서 저장할 때 `PUT /api/users/daily-lists` 로 해당 날짜 리스트를 통째로 저장
-  - 캘린더 화면 `CalendarScreen` 은 프론트 로컬 상태의 `listData` 를 활용해 **리스트가 있는 날짜를 점(dot)으로 표시**
+Mosquitto: 디바이스 이벤트 수집과 명령 전달(낮은 지연·양방향)
 
-### 12-5. 주간 날씨 조회 API (`GET /api/weather/weekly`)
+ESP32: 센서 이벤트 발행, 우산함 상태 보고, 스피커 명령 구독
 
-- **엔드포인트 (`src/routes/weather_routes.js`)**
-  - `GET /api/weather/weekly?lat={lat}&lon={lon}[&test=true]`
-  - Query 검증: `lat`, `lon` 필수 / `test`는 `'true' | 'false'` 선택
-  - Handler: `get_weekly_weather_ctrl`
 
-- **컨트롤러 (`src/controllers/weather_ctrl.js#get_weekly_weather_ctrl`)**
-  - `lat`, `lon` 을 `parseFloat` 후 유효성 체크
-  - `is_test` 여부를 쿼리로 받아 `services/weather_svc.get_weekly_weather(lat, lon, is_test)` 호출
-  - 응답: `{ days: [{ date, sky, pty, tmp, tmx, tmn, pop }, ...] }`
+| 경로           | 프로토콜        | 페이로드     | 목적                
+| -------------- | --------------- | -------------| ----------------- 
+| React ↔ Node   | REST(HTTP/JSON) | JWT, JSON    | 로그인/설정/상태 조회      
+| Node ↔ MySQL   | Prisma(ORM)     | SQL 추상화   | 데이터 영속성           
+| ESP32 ↔ Broker | MQTT(TCP/IP)    | JSON 메시지  | 이벤트 발행/명령 구독      
+| Node ↔ Broker  | MQTT Client     | JSON 메시지  | 디바이스 이벤트 수신/명령 발행 
 
-- **서비스 (`src/services/weather_svc.js#get_weekly_weather`)**
-  - `is_test === true` 인 경우: 기존 더미 데이터 반환 (테스트용)
-  - 실제 모드: OpenWeather **16일 Daily Forecast API** (`/data/2.5/forecast/daily`) 를 호출해 `list[]` 배열을 파싱
-    - 각 일자에 대해
-      - `date` (YYYY-MM-DD 문자열)
-      - `sky` (하늘 상태 코드 매핑 → 1=맑음, 3=구름많음, 4=흐림)
-      - `pty` (강수 형태 코드 → 0=없음, 1=비, 2=눈)
-      - `tmp` / `tmx` / `tmn` (일평균/최고/최저 기온)
-      - `pop` (강수 확률, %)
-  - 에러 시: 로그를 남기고 빈 배열 또는 기본 템플릿으로 대체
 
-- **프론트 사용처**
-  - `HomeScreen` 상단 카드 + `WeeklyWeatherModal` 이 이 API를 직접 사용
-  - 위치 권한 허용 시 현재 좌표를 기반으로 호출, 실패 시에는 기본 더미 값으로 UI만 유지
+4. 서비스 구동 예시
+ESP32(door_sensor) --(publish: door/{sensor_id}/sensed {user_id, sensor_id, ts})--> MQTT Broker
+MQTT Client(Node)  --(subscribe: door/+/sensed)------------------------------------> 수신
+Node(Decision)     -- 사용자 좌표/우산함 상태 조회 → get_rain_time(lat, lon)
+                   -- voice_msg 생성("오늘 HH:MM부터 비…", +알람 단어)
+Node → ESP32(speaker) --(publish: speaker/{device_id}/cmd {type:'tts', text: voice_msg})
+Node → (선택) ESP32(bin) --(publish: box/{device_id}/cmd {act:'open', close_in:10000})
+React(App)          --(REST: GET /api/bins/status)--> 현재 상태 반영
 
----
 
-## **13. 프론트엔드(Expo 앱)와의 최신 연동 포인트 요약**
+5. 메서드 엔드 포인트 (프런트앤드-백앤드)
 
-- **회원가입 플로우**
-  - Expo 앱 `RegisterScreen` → `POST /api/auth/signup`
-  - 이름/주소/기기 시리얼까지 한 번에 서버로 전송, 응답 `user_id`는 로컬 스토어에 저장
+| 메서드/경로              | 요청           | 응답             | 설명       
+| ------------------------ | -------------- | ---------------- | -------- 
+| `POST /api/auth/signup`  | `{email, pw}`  | `{user_id}`      | 회원가입     
+| `POST /api/auth/login`   | `{email, pw}`  | `{token}`        | 로그인(JWT) 
+| `GET /api/users/me`      | (JWT)          | 사용자 프로필    | 내 정보     
+| `PUT /api/users/address` | `{lat, lon}`   | `{ok, lat, lon}` | 좌표 저장    
+| `POST /api/users/alarms` | `{alarm_text}` | `{alarm_id}`     | 알람 추가    
+| `GET /api/users/alarms`  | -              | `{alarms:[...]}` | 알람 목록    
+| `GET /api/bins/status`   | `?device_id=`  | `{bin}`          | 우산함 상태   
 
-- **로그인 + 좌표 저장**
-  - `LoginScreen` → `POST /api/auth/login` 으로 JWT 획득
-  - 로그인 직후 `expo-location` 으로 현재 좌표를 얻고, `PUT /api/users/address` 로 `lat/lon` 을 저장
 
-- **마이페이지 동기화**
-  - 앱 최초 진입 시 `GET /api/users/me` 로 서버 기준 최신 프로필 수신
-  - 편집 후 완료 시, 이름/주소/비밀번호/기기 시리얼 + 좌표를 `PUT /api/users/address` 로 저장
+6. 메서드 앤드 포인트 (아두이노-백앤드)
 
-- **날짜별 리스트**
-  - `HomeScreen` / `CalendarScreen` 이 공통으로 `GET/PUT /api/users/daily-lists` 사용
-  - 서버에는 `DailyList` 모델로 저장되어, 나중에 하드웨어/웹 대시보드에서도 재사용 가능
+| 방향       | 토픽                      | 페이로드(JSON)                        | 설명           
+| ---------- | ------------------------- | ------------------------------------- | ------------ 
+| ESP → Node | `door/{sensor_id}/sensed` | `{ user_id, sensor_id, ts }`          | 근접/도어 감지 이벤트 
+| ESP → Node | `bin/{device_id}/status`  | `{ device_id, remain, cap, is_open }` | 우산함 상태       
+| Node → ESP | `speaker/{device_id}/cmd` | `{ type: 'tts', text: voice_msg }`    | 음성 안내        
+| Node → ESP | `box/{device_id}/cmd`     | `{ act: 'open', close_in: 10000 }`    | 문 개폐 명령(선택)  
 
-- **주간 날씨**
-  - 앱에서 좌표를 기반으로 `GET /api/weather/weekly` 호출 후, 홈 상단/모달 UI를 채움
 
+7. 파일간 의존 관계 (요약)
+
+routes/*  →  controllers/*  →  services/*  →  config/prisma.js (DB)
+                                           →  config/mqtt.js   (MQTT)
+middleware/* ─┘ (검증/인증/에러 공통)
+server.js  ─ 전체 부트스트랩(미들웨어+라우트+MQTT 초기화)
+
+
+8. 변수명 / 함수명 규칙
+
+네이밍은 전부 스네이크케이스(user_id, sensor_id, rain_time, voice_msg)
+
+A) 공통 키(도메인/DB 스키마 기반)
+| 변수명          | 타입           | 어디서→어디로                 | 용도/설명                                           |
+| ------------ | ------------ | ----------------------- | ----------------------------------------------- |
+| `user_id`    | int          | 프런트/ESP32 → 백엔드         | 사용자 식별자(권한/좌표/알람 조회)                            |
+| `device_id`  | int          | 프런트/ESP32 ↔ 백엔드         | 디바이스 식별자(우산함/스피커 등 공통)                          |
+| `sensor_id`  | int          | ESP32(door) → 백엔드       | 도어/근접 센서 식별자                                    |
+| `lat`        | number       | 프런트 → 백엔드               | 사용자 주소 위도(기상조회 입력)                              |
+| `lon`        | number       | 프런트 → 백엔드               | 사용자 주소 경도(기상조회 입력)                              |
+| `remain`     | int          | ESP32(bin) → 백엔드        | 우산함 남은 우산 개수                                    |
+| `cap`        | int          | ESP32(bin) → 백엔드        | 우산함 최대 수용량                                      |
+| `is_open`    | boolean      | ESP32(bin) → 백엔드        | 우산함 문 열림 상태(센서 보고값)                             |
+| `alarm_text` | string       | 프런트 → 백엔드               | 개인화 알람 항목 텍스트(예: “차키”)                          |
+| `name`       | string       | 프런트 → 백엔드               | 디바이스 표시 이름                                      |
+| `type`       | string(enum) | 프런트 → 백엔드 / 백엔드 → ESP32 | 디바이스 타입: `DOOR_SENSOR` `UMBRELLA_BIN` `SPEAKER` |
+
+
+B) 인증·보안 관련
+| 변수명             | 타입         | 어디서→어디로         | 용도/설명                      |
+| --------------- | ---------- | --------------- | -------------------------- |
+| `token`         | string     | 프런트 → 백엔드(헤더)   | JWT 액세스 토큰                 |
+| `Authorization` | string(헤더) | 프런트 → 백엔드       | `Bearer ${token}` 형태       |
+| `secret`        | string     | 프런트/ESP32 → 백엔드 | 디바이스/개발 단계 공유키(운영 시 대체 권장) |
+| `email`         | string     | 프런트 → 백엔드       | 회원가입/로그인                   |
+| `pw`            | string     | 프런트 → 백엔드       | 회원가입/로그인                   |
+
+
+
+C) REST(프런트 ↔ 백엔드) 요청/응답 변수
+
+요청 바디/쿼리 (프런트 → 백엔드)
+| 엔드포인트                              | 필드                                                |
+| ---------------------------------- | ------------------------------------------------- |
+| `POST /api/auth/signup`            | `email`, `pw`                                     |
+| `POST /api/auth/login`             | `email`, `pw`                                     |
+| `PUT /api/users/address`           | `lat`, `lon`                                      |
+| `POST /api/users/alarms`           | `alarm_text`                                      |
+| `POST /api/devices`                | `user_id`, `type`, `name`, `secret`               |
+| `POST /api/bins/update` *(테스트/시뮬)* | `device_id`, `remain`, `cap`, `is_open`, `secret` |
+| `GET /api/bins/status`             | `device_id` *(query)*                             |
+
+
+응답(백엔드 → 프런트)
+| 상황      | 필드(예시)                                                |
+| ------- | ----------------------------------------------------- |
+| 로그인     | `token`                                               |
+| 내 정보    | `id`, `email`, `lat`, `lon`                           |
+| 알람 목록   | `alarms: [{id, user_id, text}, ...]`                  |
+| 우산함 상태  | `bin: { device_id, remain, cap, is_open, updatedAt }` |
+| 디바이스 생성 | `device_id`                                           |
+| 공통      | `message`, `ok`                                       |
+
+
+D) MQTT(ESP32 ↔ 브로커 ↔ 백엔드) 페이로드/토픽 변수
+
+ESP32 → 백엔드 (Publish)
+| 토픽                        | 페이로드(JSON)                                    | 설명         |
+| ------------------------- | --------------------------------------------- | ---------- |
+| `door/{sensor_id}/sensed` | `{ "user_id", "sensor_id", "ts" }`            | 센서 트리거 이벤트 |
+| `bin/{device_id}/status`  | `{ "device_id", "remain", "cap", "is_open" }` | 우산함 상태 보고  |
+
+
+백엔드 → ESP32 (Publish)
+| 토픽                           | 페이로드(JSON)                             | 설명                |
+| ---------------------------- | -------------------------------------- | ----------------- |
+| `speaker/{device_id}/cmd`    | `{ "type": "tts", "text": voice_msg }` | 스피커 TTS 명령        |
+| `box/{device_id}/cmd` *(옵션)* | `{ "act": "open", "close_in": 10000 }` | 우산함 문 개폐/자동 닫힘 예약 |
+
+
+E) 백엔드 내부에서 계산/생성되어 외부로 전달되는 변수
+| 변수명         | 타입          | 어디서 생성            | 어디에 전달                               |
+| ----------- | ----------- | ----------------- | ------------------------------------ |
+| `rain_time` | string|null | 백엔드(weather_svc)  | 프런트 응답, TTS 문구 생성에 사용                |
+| `voice_msg` | string      | 백엔드(weather_ctrl) | ESP32 스피커(`speaker/{device_id}/cmd`) |
+| `alarms`    | string[]    | 백엔드(user_ctrl)    | 프런트 응답 / TTS 문구 꼬리말용                 |
+
+
+F>환경변수(.env)
+| 변수명             | 용도                                                 |
+| --------------- | -------------------------------------------------- |
+| `PORT`          | 백엔드 포트                                             |
+| `CORS_ORIGIN`   | 프런트 도메인 허용                                         |
+| `DATABASE_URL`  | MySQL 접속 URL                                       |
+| `JWT_SECRET`    | JWT 서명 시크릿                                         |
+| `DEVICE_SECRET` | 디바이스 공유키(개발 단계)                                    |
+| `MQTT_HOST`     | MQTT 브로커 주소(`mqtt://host:1883` 또는 `mqtts://:8883`) |
+
+
+
+
+
+
+| 함수                           | 위치                            | 역할(입력 → 출력)                    |
+| ---------------------------- | ----------------------------- | ------------------------------ |
+| `get_rain_time(lat, lon)`    | `services/weather_svc.js`     | 위경도 → 강수 시작 “HH:MM” | null     |
+| `send_tts(device_id, text)`  | `services/tts_svc.js`         | 스피커 디바이스로 TTS 명령(MQTT publish) |
+| `door_sensed()`              | `controllers/weather_ctrl.js` | 센서 이벤트 처리 → 결정/명령/로그           |
+| `bin_update()`               | `controllers/bin_ctrl.js`     | 우산함 상태 upsert                  |
+| `add_alarm()`/`list_alarm()` | `controllers/user_ctrl.js`    | 개인화 알람 CRUD                    |
+
+
+
+9. 아두이노/ESP32 (MQTT 연결—예시)
+// firmware/.../main.ino
+// #include <WiFi.h>
+// #include <PubSubClient.h>
+// 사용 변수: user_id, sensor_id, device_id, remain, cap, is_open, ts
+// 브로커/토픽: MQTT_HOST, door/{sensor_id}/sensed, bin/{device_id}/status, speaker/{device_id}/cmd, box/{device_id}/cmd
+
+// web/src/api/index.ts (프런트) — REST 호출 유틸만 import
+import type { AxiosInstance } from 'axios'; // (백엔드 종속 없음)
+
+// firmware/door_sensor/door_sensor.ino (아두이노) — 백엔드 없음, MQTT 브로커로 발행
+// #include <WiFi.h>
+// #include <PubSubClient.h>  // ESP32에서 MQTT publish/subscribe
+
+
+10.실행순서(로컬)
+
+docker compose up -d (MySQL, Mosquitto, Adminer)
+
+cd server && npm i && npx prisma migrate dev && npm run dev
+
+사용자 생성 → 좌표 저장 → 디바이스 등록
+
+ESP32를 Wi-Fi 연결 → MQTT 브로커(PC IP) 접속 → 센서 이벤트 publish
+
+백엔드가 구독/처리 → 스피커 명령 publish → 우산함 개폐/음성

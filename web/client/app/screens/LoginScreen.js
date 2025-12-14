@@ -12,7 +12,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { loginUser, updateUserProfile } from '../services/api';
+import { loginUser, updateUserProfile, registerDevice } from '../services/api';
 import { setProfile, getProfile } from '../store/userProfileStore';
 import { fetchCurrentCoordinates } from '../services/location';
 
@@ -96,6 +96,22 @@ export default function LoginScreen({ navigation, route }) {
       } catch (locError) {
         // 위치 권한 거부 또는 기타 위치 에러: 로그인은 그대로 진행, 좌표 저장만 생략
         console.log('login location update error:', locError);
+      }
+
+      // 로그인 후: 프로필에 6자리 시리얼이 있으면 기기 등록 시도
+      try {
+        const serial = (prev?.deviceSerial || '').trim();
+        if (serial.length === 6) {
+          await registerDevice(token, {
+            serial,
+            // 기본값: 도어 센서 타입, 이름은 시리얼 기반
+            type: 'DOOR_SENSOR',
+            name: `device-${serial}`,
+          });
+        }
+      } catch (regError) {
+        // 기기 등록 실패는 로그인 진행을 막지 않음
+        console.log('device register skipped:', regError?.message || regError);
       }
 
       // 로그인 성공 시 다음 화면으로 이동

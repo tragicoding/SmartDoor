@@ -41,7 +41,11 @@ export default function RegisterScreen({ navigation }) {
     if (!passwordCheck) newErrors.passwordCheck = '비밀번호를 확인해주세요';
     if (!addressRoad) newErrors.addressRoad = '도로명 주소를 입력해주세요';
     if (!addressDetail) newErrors.addressDetail = '상세 주소를 입력해주세요';
-    if (!deviceSerial) newErrors.deviceSerial = '기기 등록을 해주세요';
+    if (!deviceSerial) {
+      newErrors.deviceSerial = '6자리 기기 번호를 입력해주세요';
+    } else if (deviceSerial.length !== 6) {
+      newErrors.deviceSerial = '기기 번호는 6자리여야 합니다';
+    }
 
     if (
       password &&
@@ -267,7 +271,7 @@ export default function RegisterScreen({ navigation }) {
           <Text style={styles.inputLabel}>기기 등록</Text>
           <TextInput
             style={[styles.input, errors.deviceSerial && styles.inputError]}
-            placeholder="기기 번호를 입력해주세요"
+            placeholder="기기의 6자리 번호를 입력해주세요"
             placeholderTextColor="#C0C0C0"
             value={deviceSerial}
             onChangeText={text => {
@@ -276,6 +280,7 @@ export default function RegisterScreen({ navigation }) {
               }
               setDeviceSerial(text.toUpperCase());
             }}
+            maxLength={6}
             keyboardType="default"
             autoCapitalize="characters"
             autoCorrect={false}
