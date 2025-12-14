@@ -14,19 +14,47 @@ import { prisma } from '../config/prisma.js';
  */
 export async function signup(req, res, next) {
   try {
-    const { email, pw } = req.body;
-
+    // const { email, pw } = req.body;
+    const { email, pw, name, road_address, detail_address, device_serial } = req.body; // 2025/11/23, 11/24 강륜 수정
     // 이메일 중복 확인
     const existing_user = await prisma.user.findUnique({ where: { email } });
     if (existing_user) {
-      return res.status(409).json({ message: '이미 사용 중인 이메일.' });
+      return res.status(409).json({ message: '이미 사용 중인 아이디입니다.' });
+    }
+
+    // 기기 시리얼 유효성 및 중복 확인
+    if (device_serial) {
+      if (device_serial.length !== 6) {
+        return res.status(400).json({ message: '기기 시리얼은 6자리여야 합니다.' });
+      }
+
+      const serial_used_by_user = await prisma.user.findFirst({ where: { device_serial } });
+      if (serial_used_by_user) {
+        return res.status(409).json({ message: '이미 다른 계정에 등록된 시리얼입니다.' });
+      }
+
+      const serial_used_by_device = await prisma.device.findUnique({ where: { serial: device_serial } });
+      if (serial_used_by_device && serial_used_by_device.user_id) {
+        return res.status(409).json({ message: '이미 다른 계정에 연결된 기기입니다.' });
+      }
     }
 
     // 비밀번호 해싱
     const pw_hash = await bcrypt.hash(pw, 10);
 
     // 사용자 생성
-    const new_user = await prisma.user.create({ data: { email, pw_hash } });
+    // const new_user = await prisma.user.create({ data: { email, pw_hash } });
+    const new_user = await prisma.user.create({ // 2025/11/23 강륜 수정
+      data: { 
+        email, 
+        pw_hash,
+        pw,              // 과제용: 원문 비밀번호도 함께 저장 (실서비스에서는 사용 금지)
+        name,
+        road_address,
+        detail_address,
+        device_serial,
+      } 
+    });
 
     res.status(201).json({ user_id: new_user.id });
   } catch (error) {
@@ -47,13 +75,13 @@ export async function login(req, res, next) {
     // 사용자 조회
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return res.status(401).json({ message: '존재하지 않는 사용자.' });
+      return res.status(401).json({ message: '존재하지 않는 아이디입니다.' });
     }
 
     // 비밀번호 확인
     const is_password_valid = await bcrypt.compare(pw, user.pw_hash);
     if (!is_password_valid) {
-      return res.status(401).json({ message: '비밀번호가 일치하지 않음.' });
+      return res.status(401).json({ message: '비밀번호를 확인해주세요.' });
     }
 
     // JWT 토큰 생성. 이후에 설정 예정 - .env의 JWT_SECRET와 동일해야 함
