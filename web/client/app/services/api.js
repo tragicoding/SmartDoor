@@ -2,7 +2,7 @@
 // 2025/11/23 강륜 작성
 
 // const API_BASE_URL = 'http://localhost:4000'; // TODO: 실제 서버 주소/포트로 교체
-const API_BASE_URL = 'http://165.194.203.66:4000'; // http://인터넷 주소:4000
+const API_BASE_URL = 'http://165.194.202.144:4000'; // http://인터넷 주소:4000
 
 // 인터넷 주소 확인 방법
 // 1. window+R -> cmd 실행
@@ -173,6 +173,38 @@ export async function updateUserProfile(token, payload) {
   // 예: { ok: true, lat, lon, name, pw, road_address, detail_address, device_serial }
   return response.json();
 }
+
+export async function registerDevice(token, payload) {
+    const response = await fetch(`${API_BASE_URL}/api/devices/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        serial: payload.serial,
+        type: payload.type,
+        name: payload.name,
+      }),
+    });
+  
+    if (!response.ok) {
+      let errorMessage = '기기 등록에 실패했습니다.';
+      try {
+        const errorBody = await response.json();
+        if (errorBody?.message) {
+          errorMessage = errorBody.message;
+        }
+      } catch {
+        // ignore JSON parse error
+      }
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      throw error;
+    }
+  
+    return response.json();
+  }
 
 /**
  * 주간 날씨 정보 조회

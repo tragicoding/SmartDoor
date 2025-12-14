@@ -15,7 +15,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getProfile, setProfile } from '../store/userProfileStore';
-import { getMyProfile, updateUserProfile } from '../services/api';
+import { getMyProfile, updateUserProfile, registerDevice } from '../services/api';
 import { fetchCurrentCoordinates } from '../services/location';
 
 const PROFILE_IMAGE_PATH = require('../components/image/profiled.png');
@@ -106,6 +106,30 @@ export default function MyPageScreen({ navigation }) {
       try {
         setSaving(true);
         setSaveError('');
+
+        // --- 기기 등록 로직 ---
+        // 기기 시리얼 번호가 입력되었고, 기존 번호와 다를 경우에만 등록 시도
+        if (deviceSerial && deviceSerial !== initialProfile.deviceSerial) {
+          try {
+            await registerDevice(profile.authToken, {
+              serial: deviceSerial,
+              type: 'DOOR_SENSOR', // 기본값
+              name: '내 현관문',    // 기본값
+            });
+            Alert.alert('성공', '기기가 성공적으로 등록되었습니다.');
+          } catch (regError) {
+            console.log('registerDevice error:', regError);
+            // 409 Conflict 에러는 이미 다른 사용자가 등록했다는 의미
+            if (regError.status === 409) {
+                setSaveError('이미 다른 계정에 등록된 기기입니다.');
+            } else {
+                setSaveError('기기 등록에 실패했습니다. 시리얼 번호를 확인해주세요.');
+            }
+            return; // 기기 등록 실패 시 프로필 저장을 중단
+          }
+        }
+        // --- 기기 등록 로직 끝 ---
+
 
         // 1) 기본값: 기존에 저장된 좌표가 있으면 유지, 없으면 0,0 사용
         let lat = profile.lat ?? 0;

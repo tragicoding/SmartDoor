@@ -10,11 +10,11 @@
 // ==============================
 
 // ★ 네 환경에 맞게 수정 ★
-const char* WIFI_SSID     = "Smart-CAU";
-const char* WIFI_PASSWORD = "carpediem804!";
+const char* WIFI_SSID     = "Smart-CAU";     //개인
+const char* WIFI_PASSWORD = "carpediem804!";  //,개인
 
 // MQTT 브로커 (백엔드에서 쓰는 Docker mosquitto)
-const char* MQTT_HOST     = "165.194.221.83";  // PC IP
+const char* MQTT_HOST     = "165.194.221.83";  // PC IP     //개인
 const uint16_t MQTT_PORT  = 1883;
 
 // API.md 에는 smartdoor_mqtt 계정이 있지만,
