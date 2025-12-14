@@ -101,6 +101,47 @@ export async function loginUser(payload) {
 }
 
 /**
+ * 기기 등록 API 호출
+ * POST /api/devices/register
+ * Header: Authorization: Bearer {token}
+ * Body: { serial, type, name }
+ *
+ * @param {string} token - JWT 토큰
+ * @param {{ serial: string; type: 'DOOR_SENSOR'|'UMBRELLA_BIN'|'SPEAKER'; name: string }} payload
+ */
+export async function registerDevice(token, payload) {
+  const response = await fetch(`${API_BASE_URL}/api/devices/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      serial: payload.serial,
+      type: payload.type,
+      name: payload.name,
+    }),
+  });
+
+  if (!response.ok) {
+    let errorMessage = '기기 등록에 실패했습니다.';
+    try {
+      const errorBody = await response.json();
+      if (errorBody?.message) {
+        errorMessage = errorBody.message;
+      }
+    } catch {
+      // ignore JSON parse error
+    }
+    const error = new Error(errorMessage);
+    error.status = response.status;
+    throw error;
+  }
+
+  return response.json(); // { device_id: number }
+}
+
+/**
  * 내 프로필 조회 API 호출
  * GET /api/users/me
  * Header: Authorization: Bearer {token}

@@ -22,6 +22,23 @@ export async function signup(req, res, next) {
       return res.status(409).json({ message: '이미 사용 중인 아이디입니다.' });
     }
 
+    // 기기 시리얼 유효성 및 중복 확인
+    if (device_serial) {
+      if (device_serial.length !== 6) {
+        return res.status(400).json({ message: '기기 시리얼은 6자리여야 합니다.' });
+      }
+
+      const serial_used_by_user = await prisma.user.findFirst({ where: { device_serial } });
+      if (serial_used_by_user) {
+        return res.status(409).json({ message: '이미 다른 계정에 등록된 시리얼입니다.' });
+      }
+
+      const serial_used_by_device = await prisma.device.findUnique({ where: { serial: device_serial } });
+      if (serial_used_by_device && serial_used_by_device.user_id) {
+        return res.status(409).json({ message: '이미 다른 계정에 연결된 기기입니다.' });
+      }
+    }
+
     // 비밀번호 해싱
     const pw_hash = await bcrypt.hash(pw, 10);
 
