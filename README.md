@@ -55,7 +55,7 @@ git checkout Gangryun
 - **Setup Guide:** See `docs/SETUP.md` for development environment setup and instructions.
 - **Terminal:** On Windows, `npm` commands may be blocked by PowerShell's security policy. It is recommended to use **CMD** or **Git Bash**.
 - **Installation:** To install dependencies, run `npm install` in the relevant directory (e.g., `/server`).
-- **Part-specific READMEs:** Check the `README.md` files in `/web`, `/server`, and `/firmware` for specific details on variables and endpoints.
+- **Part-specific READMEs:** Check the `README.md` files in `/web`, `/server`, and `/arduino` for specific details on variables and endpoints.
 - **`.gitignore`:** `node_modules` and `.env` files are ignored. `.env` configurations should be coordinated personally. `node_modules` is excluded due to its size and can be regenerated with `npm install`.
 
 ---
@@ -157,7 +157,7 @@ Final Project for Physical Computing
 0. Front end, Backend, Firmware 각 파트별로 README.md에 변수 및 엔드포인트 명시 했습니다. 확인바랍니다.
 0. Front end : /web
    Backend : /server
-   Firmware(Arduino) : /firmwre
+   Firmware(Arduino) : /arduino
 0. node.module과 .env는 git ignore에 포함하엿음. 추후에 env환경변수 내용은 개인적으로 조율합시다. 
    node.module은 너무 무거워서 ignore함. npm install 명령어 입력하면, package.json 목록에 따라 알아서 작동됨
 
@@ -217,10 +217,8 @@ Physical-Computing-Project/
 │  └─ src/
 │     └─ app.tsx                                # Example of backend REST calls
 │
-├─ firmware/                                    # ESP32 (Arduino)
-│  ├─ door_sensor/door_sensor.ino               # MQTT publish
-│  ├─ umbrella_bin/umbrella_bin.ino             # MQTT publish
-│  └─ speaker_tts/speaker_tts.ino               # MQTT subscribe
+├─ arduino/                                     # ESP32 (Arduino)
+│  └─ device.cpp                                # Firmware Source
 │  
 ├─ deploy/
 │  └─ docker-compose.yml                        # MySQL, Mosquitto, Adminer containers
