@@ -97,7 +97,7 @@ The project uses Docker for `mysql` and `mqtt`. The current implementation with 
 ---
 
 ## **1. System Architecture**
-
+```
 Physical-Computing-Project/
 ├─ server/                                      # 백엔드 루트(Express 앱)
 │  ├─ prisma/
@@ -144,3 +144,4 @@ Physical-Computing-Project/
 └─ docs/
    ├─ API.md                                    # REST API specifications
    └─ SETUP.md                                  # Local setup guide
+```
