@@ -17,6 +17,7 @@ web/node_modules/
 .env
 .env.*
 !.env.example
+deploy/.env
 
 
 # 3. 로그 파일 (Log Files)

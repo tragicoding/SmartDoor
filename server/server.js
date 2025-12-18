@@ -5,6 +5,17 @@
 // 역할: Express 서버 초기화, 미들웨어 설정, 라우트 연결, 서버 실행
 
 import 'dotenv/config'; // .env 파일 로드
+
+// --- 필수 환경변수 확인 ---
+const required_env_vars = ['DATABASE_URL', 'JWT_SECRET', 'DEVICE_SECRET', 'MQTT_HOST', 'CORS_ORIGIN'];
+const missing_env_vars = required_env_vars.filter(key => !process.env[key]);
+
+if (missing_env_vars.length > 0) {
+  console.error(`[FATAL] 필수 환경변수가 설정되지 않았습니다: ${missing_env_vars.join(', ')}`);
+  console.error('서버를 실행하기 전에 .env 파일을 올바르게 설정해주세요.');
+  process.exit(1); // 프로세스 종료
+}
+
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -35,6 +46,14 @@ app.use(morgan('dev'));
 app.get('/api/health', (_req, res) => res.json({ ok: true, message: 'Server is running' }));
 
 // 기능별 API 라우트
+
+
+
+app.get('/', (req, res) => {
+  res.send('Smart Door API server is running 🚪');
+});
+
+
 app.use('/api/auth', auth_routes);
 app.use('/api/users', user_routes);
 app.use('/api/devices', device_routes);

@@ -21,7 +21,8 @@ export function validate(part, schema) {
       abortEarly: false, 
       stripUnknown: true 
     });
-
+    
+    // 에러 일때 클라이언트에게 보낼 메시지
     if (error) {
       const error_details = error.details.map(detail => detail.message).join(', ');
       return res.status(400).json({ 
@@ -31,7 +32,16 @@ export function validate(part, schema) {
     }
 
     // 검증 및 변환된 데이터를 다시 요청 객체에 할당
-    req[part] = value;
+    // Express 5에서는 req.query / req.params 프로퍼티 자체는 읽기 전용이라,
+    // 객체를 재할당하지 않고 기존 객체에 병합해야 함.
+    if (part === 'query' || part === 'params') {
+      const target = req[part] || {};
+      // 기존 키 제거 후 value 병합 (stripUnknown 결과만 남기기 위함)
+      Object.keys(target).forEach(key => { delete target[key]; });
+      Object.assign(target, value);
+    } else {
+      req[part] = value;
+    }
     next();
   };
 }

@@ -12,18 +12,18 @@ services:
     container_name: mysql_smartdoor
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: "----"          # 
-      MYSQL_DATABASE: "smart_door_db"      #
-      MYSQL_USER: "smart"                  # 
-      MYSQL_PASSWORD: "----"            # 
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
       TZ: "Asia/Seoul"
+    env_file:
+      - ./.env
     command: [
       "--default-authentication-plugin=mysql_native_password",
       "--character-set-server=utf8mb4",
       "--collation-server=utf8mb4_unicode_ci"
     ]
     ports:
-      - "3306:3306"                        # 호스트:컨테이너
+      - "3307:3306"                        # 호스트:컨테이너
     volumes:
       - mysql_data:/var/lib/mysql          # 데이터 영속(볼륨 경로는 추후에 변경 가능성 있음)
     healthcheck:
@@ -53,9 +53,10 @@ services:
       # - "8883:8883"                      # TLS 사용 시 오픈
     volumes:
       # ★ mosquitto.conf를 프로젝트에 두고 마운트 (상대경로 유지)
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
       - mosquitto_data:/mosquitto/data
       - mosquitto_log:/mosquitto/log
+      - ./mosquitto_passfile:/mosquitto/config/mosquitto_passfile
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 1883 || exit 1"]
       interval: 10s
