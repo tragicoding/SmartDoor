@@ -72,7 +72,12 @@ export async function handleDoorSensed(topic, payload) {
     }
 
     // 4. 날씨 서비스로부터 강수 정보 조회 (is_test = false)
-    const rain_time = await get_rain_info(user.lat, user.lon, false);
+    const is_test = process.env.TEST_MODE === 'true';
+    await processDoorEvent(user_id, { is_test });
+
+    if (is_test) {
+        return '18:00';  // 시연용 고정 비 시작 시간
+      }
 
     // 5. 사용자의 우산함 상태 조회
     const bin_devices = await prisma.device.findMany({ 
