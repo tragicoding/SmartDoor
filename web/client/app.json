@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "client",
-    "slug": "client",
+    "name": "SmartDoor",
+    "slug": "smartdoor",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./app/components/logo.png",

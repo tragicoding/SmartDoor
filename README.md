@@ -1,4 +1,4 @@
-# Physical-Computing-Project
+# SmartDoor
 A collaborative code space for physical computing project developers.
 
 **Chung-Ang University, Art and Technology**
@@ -98,7 +98,7 @@ The project uses Docker for `mysql` and `mqtt`. The current implementation with 
 
 ## **1. System Architecture**
 ```
-Physical-Computing-Project/
+SmartDoor/
 ├─ server/                                      # 백엔드 루트(Express 앱)
 │  ├─ prisma/
 │  │  └─ schema.prisma                          # DB 스키마(User/Device/UmbrellaBin/Alarm 등)
