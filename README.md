@@ -48,7 +48,7 @@ git checkout Gangryun
 ### **Project Guidelines**
 
 - **Commit Messages:** When pushing or committing, please write clear and descriptive commit messages detailing your changes.
-- **Dependencies:** If you add new libraries or packages for frontend, backend, or Arduino, please share the updates with the team.
+- **Dependencies:** If you add new libraries or packages for frontend, backend, or Arduino, please share the updates with the team. Arduino firmware is managed via **PlatformIO** — add new libraries to `arduino/platformio.ini` under `lib_deps`.
 - **Directory Structure:** The directory structure is flexible. Feel free to create files and folders within your designated part of the project.
 - **API Documentation:** Refer to `docs/API.md` for all API endpoints.
 - **Setup Guide:** See `docs/SETUP.md` for development environment setup and instructions.
@@ -131,12 +131,30 @@ Physical-Computing-Project/
 │  ├─ package.json                              # Dependencies and scripts
 │  └─ server.js                                 # App entry point
 │
-├─ web/                                         # Frontend (React/Vite)
-│  └─ src/
-│     └─ app.tsx                                # Example of backend REST calls
+├─ web/                                         # Frontend (React Native/Expo)
+│  └─ client/                                   # Expo 앱 루트
+│     ├─ App.js                                 # 앱 진입점 (폰트 로드 · 네비게이터 초기화)
+│     └─ app/
+│        └─ components/                         # 재사용 UI 컴포넌트
 │
-├─ arduino/                                     # ESP32 (Arduino)
-│  └─ device.cpp                                # Firmware Source
+├─ arduino/                                     # ESP32 펌웨어 (PlatformIO)
+│  ├─ platformio.ini                            # 보드·라이브러리 설정
+│  ├─ include/                                  # 공개 헤더
+│  │  ├─ config.h                               # WiFi / MQTT / 핀 / 상수 전체 설정
+│  │  ├─ wifi_manager.h
+│  │  ├─ mqtt_handler.h
+│  │  ├─ sensor.h
+│  │  ├─ servo_ctrl.h
+│  │  ├─ lcd_display.h
+│  │  └─ audio.h
+│  └─ src/                                      # 구현 소스
+│     ├─ main.cpp                               # setup() / loop()
+│     ├─ wifi_manager.cpp                       # WPA2 WiFi 연결
+│     ├─ mqtt_handler.cpp                       # MQTT 연결 · 구독 · 발행 · 콜백
+│     ├─ sensor.cpp                             # HC-SR04P 초음파 거리 측정
+│     ├─ servo_ctrl.cpp                         # 서보 열기 / 닫기 / 자동닫힘 타이머
+│     ├─ lcd_display.cpp                        # I2C LCD 표시
+│     └─ audio.cpp                              # I2S WAV 스트리밍 (MAX98357)
 │  
 ├─ deploy/
 │  └─ docker-compose.yml                        # MySQL, Mosquitto, Adminer containers
